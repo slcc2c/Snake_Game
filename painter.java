@@ -10,9 +10,9 @@ public class painter extends java.applet.Applet
     Snake s = new Snake();
     int s_pos_x = 0;
     int s_pos_y = 0;
-    int d_x = 5;
+    int d_x = 1;
     int d_y = 0;
-    int speed = 500;
+    int speed = 1;
     public void start() {
         addKeyListener(this);
         s.ate();
@@ -31,10 +31,15 @@ public class painter extends java.applet.Applet
 
     public void run() {
         while (true) {
-            if (s_pos_y > this.getHeight() || s_pos_y < 0 || s_pos_x > this.getWidth()) stop();
+            if (s_pos_y > this.getHeight() || s_pos_y < 0 || s_pos_x > this.getWidth()) {
+                stop();
+                System.exit(0);
+                break;
+
+            }
             repaint();
             try {
-                Thread.sleep(250);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
             }
         }
@@ -44,8 +49,8 @@ public class painter extends java.applet.Applet
         for (int i = 0; i < s.score; i++) {
             g.drawRect(s_pos_x + i * 5, s_pos_y + i * 5, 5, 5);
         }
-        s_pos_x += d_x;
-        s_pos_y += d_y;
+        s_pos_x += (d_x + (s.score * d_x));
+        s_pos_y += (d_y + (s.score * d_y));
     }
 
     @Override
@@ -56,12 +61,27 @@ public class painter extends java.applet.Applet
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == 38) {
-            d_x = 0;
-            d_y = 5;
-        }
-        if (e.getKeyCode() == 37) {
-            d_x = -5;
-            d_y = 0;
+            if (d_y != 1) {
+                d_x = 0;
+                d_y = -1;
+            }
+        } else if (e.getKeyCode() == 37) {
+            if (d_x != 1) {
+                d_x = -1;
+                d_y = 0;
+            }
+        } else if (e.getKeyCode() == 39) {
+            if (d_x != -1) {
+                d_x = 1;
+                d_y = 0;
+            }
+        } else if (e.getKeyCode() == 40) {
+            if (d_y != -1) {
+                d_x = 0;
+                d_y = 1;
+            }
+        } else {
+            System.out.println(e.getKeyCode());
         }
     }
 
