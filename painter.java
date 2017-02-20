@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.geom.Rectangle2D;
 
 public class painter extends java.applet.Applet
         implements Runnable, KeyListener {
@@ -8,14 +9,18 @@ public class painter extends java.applet.Applet
 
     Thread runner;
     Snake s = new Snake();
-    int s_pos_x = 0;
-    int s_pos_y = 0;
-    int d_x = 1;
-    int d_y = 0;
-    int speed = 1;
+    int SPEED_OFFSET = s.size / 6;
+
+    int WIDTH = 500;
+    int HEIGHT = 500;
+
+    int speed = 0;
+
+
     public void start() {
+        this.setSize(WIDTH, HEIGHT);
         addKeyListener(this);
-        s.ate();
+        s.new_pellet(getWidth(), getHeight());
         if (runner == null) {
             runner = new Thread(this);
             runner.start();
@@ -31,26 +36,41 @@ public class painter extends java.applet.Applet
 
     public void run() {
         while (true) {
-            if (s_pos_y > this.getHeight() || s_pos_y < 0 || s_pos_x > this.getWidth()) {
+            repaint();
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
+            if (s.pos_y + s.size > this.getHeight() || s.pos_y < 0 || s.pos_x + s.size > this.getWidth() || s.pos_x < 0) {
                 stop();
                 System.exit(0);
                 break;
 
             }
-            repaint();
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-            }
         }
     }
 
     public void paint(Graphics g) {
-        for (int i = 0; i < s.score; i++) {
-            g.drawRect(s_pos_x + i * 5, s_pos_y + i * 5, 5, 5);
+
+
+        SPEED_OFFSET = s.size / 6;
+
+        s.update_snake(SPEED_OFFSET);
+
+        if (s.test_eat()) {
+            s.ate(getWidth(), getHeight());
         }
-        s_pos_x += (d_x + (s.score * d_x));
-        s_pos_y += (d_y + (s.score * d_y));
+        g.drawString(String.valueOf(s.score), WIDTH - 25, 25);
+        for (Rectangle2D rec : s.rects) {
+            g.fillRect((int) rec.getX(), (int) rec.getY(), s.size, s.size);
+        }
+
+        g.setColor(Color.RED);
+        g.fillRect((int) s.pellet.getX(), (int) s.pellet.getY(), s.pellet_size, s.pellet_size);
+
+
+
+
     }
 
     @Override
@@ -61,28 +81,26 @@ public class painter extends java.applet.Applet
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == 38) {
-            if (d_y != 1) {
-                d_x = 0;
-                d_y = -1;
-            }
-        } else if (e.getKeyCode() == 37) {
-            if (d_x != 1) {
-                d_x = -1;
-                d_y = 0;
-            }
-        } else if (e.getKeyCode() == 39) {
-            if (d_x != -1) {
-                d_x = 1;
-                d_y = 0;
+            if (s.d_y != SPEED_OFFSET) {
+                s.setDirection(3);
             }
         } else if (e.getKeyCode() == 40) {
-            if (d_y != -1) {
-                d_x = 0;
-                d_y = 1;
+            if (s.d_y != -SPEED_OFFSET) {
+                s.setDirection(1);
+            }
+        } else if (e.getKeyCode() == 39) {
+            if (s.d_x != -SPEED_OFFSET) {
+                s.setDirection(0);
+            }
+        } else if (e.getKeyCode() == 37) {
+            if (s.d_x != SPEED_OFFSET) {
+                s.setDirection(2);
             }
         } else {
             System.out.println(e.getKeyCode());
         }
+        System.out.println(e.getKeyCode());
+        repaint();
     }
 
     @Override
