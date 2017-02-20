@@ -8,14 +8,14 @@ import java.util.Random;
  */
 public class Snake {
     ArrayList<Rectangle2D> rects = new ArrayList<>();
-    int size = 10;
-    int max_score = 5;
-    int score = 1;
+    int size = 15;
+    int max_score = 20;
+    int score = 0;
     int pos_x = 0;
     int pos_y = 0;
     int pellet_x = 0;
     int pellet_y = 0;
-    int pellet_size = 10;
+    int pellet_size = 15;
     int direction = 0;
     int d_x = 0;
     int d_y = 0;
@@ -35,7 +35,7 @@ public class Snake {
 
     void new_pellet(int w, int h) {
         Random rand = new Random();
-        pellet = new Rectangle((rand.nextInt(w) / size) * pellet_size, (rand.nextInt(h) / size) * pellet_size, pellet_size, pellet_size);
+        pellet = new Rectangle((rand.nextInt(w - pellet_size) / pellet_size) * pellet_size, (rand.nextInt(h - pellet_size) / pellet_size) * pellet_size, pellet_size, pellet_size);
     }
 
     boolean test_eat() {
@@ -72,6 +72,7 @@ public class Snake {
         }
         for (int i = rects.size() - 1; i > 0; i--) {
             rects.set(i, rects.get(i - 1));
+            rects.get(i).setRect(rects.get(i).getX() + d_x, rects.get(i).getY() + d_y, size, size);
         }
         rects.set(0, new Rectangle(pos_x, pos_y, size, size));
 

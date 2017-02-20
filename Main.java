@@ -3,21 +3,21 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.Rectangle2D;
 
-public class painter extends java.applet.Applet
+public class Main extends java.applet.Applet
         implements Runnable, KeyListener {
 
 
     Thread runner;
     Snake s = new Snake();
-    int SPEED_OFFSET = s.size / 6;
+    int SPEED_OFFSET = 1;
 
     int WIDTH = 500;
     int HEIGHT = 500;
 
     int speed = 0;
 
-
-    public void start() {
+    @Override
+    public void init() {
         this.setSize(WIDTH, HEIGHT);
         addKeyListener(this);
         s.new_pellet(getWidth(), getHeight());
@@ -27,6 +27,7 @@ public class painter extends java.applet.Applet
         }
     }
 
+    @Override
     public void stop() {
         if (runner != null) {
             runner.interrupt();
@@ -34,14 +35,15 @@ public class painter extends java.applet.Applet
         }
     }
 
+    @Override
     public void run() {
         while (true) {
             repaint();
             try {
-                Thread.sleep(50);
+                Thread.sleep(10);
             } catch (InterruptedException e) {
             }
-            if (s.pos_y + s.size > this.getHeight() || s.pos_y < 0 || s.pos_x + s.size > this.getWidth() || s.pos_x < 0) {
+            if (s.pos_y + s.size > this.getHeight() || s.pos_y < 0 || s.pos_x + s.size > this.getWidth() || s.pos_x < 0 || s.score > s.max_score) {
                 stop();
                 System.exit(0);
                 break;
@@ -50,15 +52,20 @@ public class painter extends java.applet.Applet
         }
     }
 
+    //TODO Rework loop to move 1 px each time
+    @Override
     public void paint(Graphics g) {
+        super.paint(g);
 
 
-        SPEED_OFFSET = s.size / 6;
 
         s.update_snake(SPEED_OFFSET);
 
         if (s.test_eat()) {
             s.ate(getWidth(), getHeight());
+            if (s.score % 10 == 0) {
+                SPEED_OFFSET++;
+            }
         }
         g.drawString(String.valueOf(s.score), WIDTH - 25, 25);
         for (Rectangle2D rec : s.rects) {
@@ -107,4 +114,6 @@ public class painter extends java.applet.Applet
     public void keyReleased(KeyEvent e) {
 
     }
+
+
 }
