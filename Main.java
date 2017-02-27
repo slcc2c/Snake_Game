@@ -5,7 +5,8 @@ import java.awt.geom.Rectangle2D;
 
 public class Main extends java.applet.Applet
         implements Runnable, KeyListener {
-
+    Graphics bufferGraphics;
+    Image offscreen;
 
     Thread runner;
     Snake s = new Snake();
@@ -21,6 +22,8 @@ public class Main extends java.applet.Applet
         this.setSize(WIDTH, HEIGHT);
         addKeyListener(this);
         s.new_pellet(getWidth(), getHeight());
+        offscreen = createImage(WIDTH, HEIGHT);
+        bufferGraphics = offscreen.getGraphics();
         if (runner == null) {
             runner = new Thread(this);
             runner.start();
@@ -38,9 +41,8 @@ public class Main extends java.applet.Applet
     @Override
     public void run() {
         while (true) {
-            repaint();
             try {
-                Thread.sleep(10);
+                Thread.sleep(25
             } catch (InterruptedException e) {
             }
             if (s.pos_y + s.size > this.getHeight() || s.pos_y < 0 || s.pos_x + s.size > this.getWidth() || s.pos_x < 0 || s.score > s.max_score) {
@@ -49,35 +51,39 @@ public class Main extends java.applet.Applet
                 break;
 
             }
+            repaint();
+
         }
     }
 
     //TODO Rework loop to move 1 px each time
     @Override
     public void paint(Graphics g) {
-        super.paint(g);
-
+        bufferGraphics.clearRect(0, 0, WIDTH, HEIGHT);
 
 
         s.update_snake(SPEED_OFFSET);
 
         if (s.test_eat()) {
             s.ate(getWidth(), getHeight());
-            if (s.score % 10 == 0) {
+            if (s.score % 5 == 0) {
                 SPEED_OFFSET++;
             }
         }
-        g.drawString(String.valueOf(s.score), WIDTH - 25, 25);
+        bufferGraphics.setColor(Color.BLACK);
+        bufferGraphics.drawString(String.valueOf(s.score), WIDTH - 25, 25);
         for (Rectangle2D rec : s.rects) {
-            g.fillRect((int) rec.getX(), (int) rec.getY(), s.size, s.size);
+            bufferGraphics.fillRect((int) rec.getX(), (int) rec.getY(), s.size, s.size);
         }
 
-        g.setColor(Color.RED);
-        g.fillRect((int) s.pellet.getX(), (int) s.pellet.getY(), s.pellet_size, s.pellet_size);
+        bufferGraphics.setColor(Color.RED);
+        bufferGraphics.fillRect((int) s.pellet.getX(), (int) s.pellet.getY(), s.pellet_size, s.pellet_size);
+        g.drawImage(offscreen, 0, 0, this);
 
+    }
 
-
-
+    public void update(Graphics g) {
+        paint(g);
     }
 
     @Override
@@ -88,19 +94,19 @@ public class Main extends java.applet.Applet
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == 38) {
-            if (s.d_y != SPEED_OFFSET) {
+            if (s.d_y == 0) {
                 s.setDirection(3);
             }
         } else if (e.getKeyCode() == 40) {
-            if (s.d_y != -SPEED_OFFSET) {
+            if (s.d_y == 0) {
                 s.setDirection(1);
             }
         } else if (e.getKeyCode() == 39) {
-            if (s.d_x != -SPEED_OFFSET) {
+            if (s.d_x == 0) {
                 s.setDirection(0);
             }
         } else if (e.getKeyCode() == 37) {
-            if (s.d_x != SPEED_OFFSET) {
+            if (s.d_x == 0) {
                 s.setDirection(2);
             }
         } else {
